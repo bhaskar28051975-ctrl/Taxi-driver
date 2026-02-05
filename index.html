@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Registration - Bhaskar Taxi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 p-4 pb-10">
+
+    <div class="max-w-md mx-auto">
+        <div class="text-center mb-8">
+            <div class="inline-block p-4 bg-yellow-400 rounded-full mb-4 shadow-lg">
+                <i class="fa-solid fa-taxi text-3xl text-slate-800"></i>
+            </div>
+            <h1 class="text-2xl font-black text-slate-800 uppercase italic">Join Our Fleet</h1>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mt-1">Taxi Driver Registration</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 space-y-4">
+            
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Driver Details</label>
+                <input id="drName" type="text" placeholder="Full Name" class="w-full p-4 mt-1 border rounded-2xl bg-slate-50 font-bold outline-none focus:border-yellow-500">
+                <input id="drPhone" type="tel" placeholder="Phone Number" class="w-full p-4 mt-2 border rounded-2xl bg-slate-50 font-bold outline-none focus:border-yellow-500">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Vehicle Details</label>
+                <input id="taxiModel" type="text" placeholder="Taxi Model (e.g. Swift Dzire)" class="w-full p-4 mt-1 border rounded-2xl bg-slate-50 font-bold outline-none focus:border-yellow-500">
+                <input id="taxiNum" type="text" placeholder="Taxi Number (e.g. AP 03 XX 1234)" class="w-full p-4 mt-2 border rounded-2xl bg-slate-50 font-bold outline-none focus:border-yellow-500">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Driver Photo URL</label>
+                <input id="drPhoto" type="text" placeholder="Paste Photo URL here" class="w-full p-4 mt-1 border rounded-2xl bg-slate-50 font-bold outline-none focus:border-yellow-500">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Available Tour Packages</label>
+                <textarea id="tourPackages" placeholder="e.g. Tirumala Local, Kanipakam, Horsley Hills..." rows="3" class="w-full p-4 mt-1 border rounded-2xl bg-slate-50 font-bold outline-none focus:border-yellow-500"></textarea>
+            </div>
+
+            <button onclick="registerDriver()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-all">
+                Submit Application ➔
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Your Firebase Config (Keep same as Food App for now or change to Taxi Project)
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAT074ME7aIbb4R2VzgZZGdw8F3alL-xbA", 
+            authDomain: "bhaskar-food-app.firebaseapp.com", 
+            databaseURL: "https://bhaskar-food-app-default-rtdb.firebaseio.com", 
+            projectId: "bhaskar-food-app", 
+            appId: "1:712053690568:web:b4d8b789e0359ebc0e95fd" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.registerDriver = () => {
+            const name = document.getElementById('drName').value;
+            const phone = document.getElementById('drPhone').value;
+            const model = document.getElementById('taxiModel').value;
+            const number = document.getElementById('taxiNum').value;
+            const photo = document.getElementById('drPhoto').value;
+            const tours = document.getElementById('tourPackages').value;
+
+            if(!name || !phone || !number) {
+                alert("Please fill Name, Phone and Taxi Number");
+                return;
+            }
+
+            const driverData = {
+                name,
+                phone,
+                taxiModel: model,
+                taxiNumber: number,
+                photo: photo || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+                tourPackages: tours,
+                status: "pending_verification", // Admin must approve before they appear in user app
+                joinedAt: Date.now()
+            };
+
+            push(ref(db, 'drivers'), driverData).then(() => {
+                alert("Registration Submitted! We will contact you soon.");
+                location.reload();
+            }).catch(err => alert("Error: " + err.message));
+        };
+    </script>
+</body>
+</html>
