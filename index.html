@@ -49,20 +49,29 @@
     </div>
 
     <script type="module">
+        // Import Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
         import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Your Firebase Config (Keep same as Food App for now or change to Taxi Project)
-        const firebaseConfig = { 
-            apiKey: "AIzaSyAT074ME7aIbb4R2VzgZZGdw8F3alL-xbA", 
-            authDomain: "bhaskar-food-app.firebaseapp.com", 
-            databaseURL: "https://bhaskar-food-app-default-rtdb.firebaseio.com", 
-            projectId: "bhaskar-food-app", 
-            appId: "1:712053690568:web:b4d8b789e0359ebc0e95fd" 
+        // Your NEW Taxi Driver Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCK974BfqA602L1Ne4ihlIrS3o7_iPknuA",
+            authDomain: "taxi--driver.firebaseapp.com",
+            databaseURL: "https://taxi--driver-default-rtdb.firebaseio.com",
+            projectId: "taxi--driver",
+            storageBucket: "taxi--driver.firebasestorage.app",
+            messagingSenderId: "651150108647",
+            appId: "1:651150108647:web:251dbedfa6669762993f42",
+            measurementId: "G-P6KYCH5W8Q"
         };
+
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const db = getDatabase(app);
 
+        // Function to handle Driver Registration
         window.registerDriver = () => {
             const name = document.getElementById('drName').value;
             const phone = document.getElementById('drPhone').value;
@@ -71,6 +80,7 @@
             const photo = document.getElementById('drPhoto').value;
             const tours = document.getElementById('tourPackages').value;
 
+            // Simple validation
             if(!name || !phone || !number) {
                 alert("Please fill Name, Phone and Taxi Number");
                 return;
@@ -83,14 +93,18 @@
                 taxiNumber: number,
                 photo: photo || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
                 tourPackages: tours,
-                status: "pending_verification", // Admin must approve before they appear in user app
+                status: "pending_verification",
                 joinedAt: Date.now()
             };
 
+            // Push data to Realtime Database
             push(ref(db, 'drivers'), driverData).then(() => {
-                alert("Registration Submitted! We will contact you soon.");
+                alert("Registration Submitted Successfully! We will review your application.");
                 location.reload();
-            }).catch(err => alert("Error: " + err.message));
+            }).catch(err => {
+                console.error(err);
+                alert("Error: " + err.message);
+            });
         };
     </script>
 </body>
