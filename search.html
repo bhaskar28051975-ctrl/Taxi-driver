@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find a Taxi - Bhaskar Taxi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white p-6 shadow-sm sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-black text-slate-800 italic uppercase">Bhaskar Taxi</h1>
+            <div class="bg-yellow-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">Verified Drivers</div>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-md mx-auto pb-20">
+        <div class="mb-6">
+            <input type="text" id="searchInput" onkeyup="filterDrivers()" placeholder="Search Tour (e.g. Tirumala, Local)" 
+            class="w-full p-4 rounded-2xl border-none shadow-md font-bold text-sm outline-none focus:ring-2 focus:ring-yellow-400">
+        </div>
+
+        <div id="passengerView" class="space-y-4">
+            <div class="text-center py-10 text-slate-400 font-bold">Searching for nearby taxis...</div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCK974BfqA602L1Ne4ihlIrS3o7_iPknuA",
+            authDomain: "taxi--driver.firebaseapp.com",
+            databaseURL: "https://taxi--driver-default-rtdb.firebaseio.com",
+            projectId: "taxi--driver",
+            appId: "1:651150108647:web:251dbedfa6669762993f42"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        onValue(ref(db, 'drivers'), (snapshot) => {
+            const container = document.getElementById('passengerView');
+            container.innerHTML = "";
+            
+            if (snapshot.exists()) {
+                snapshot.forEach((child) => {
+                    const d = child.val();
+                    
+                    // ONLY SHOW APPROVED DRIVERS
+                    if (d.status === "Approved") {
+                        container.innerHTML += `
+                        <div class="bg-white rounded-[2rem] p-5 shadow-lg border border-slate-100 driver-card">
+                            <div class="flex gap-4 items-start mb-4">
+                                <img src="${d.photo}" class="w-20 h-20 rounded-2xl object-cover border-2 border-yellow-400 p-0.5">
+                                <div class="flex-1">
+                                    <h2 class="text-lg font-black text-slate-800 leading-tight uppercase">${d.name}</h2>
+                                    <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">${d.taxiModel}</p>
+                                    <div class="flex items-center gap-1 mt-2">
+                                        <span class="bg-slate-100 text-slate-600 text-[9px] px-2 py-0.5 rounded-md font-black uppercase">${d.taxiNumber}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-3 rounded-xl mb-4">
+                                <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Available Packages</p>
+                                <p class="text-xs font-bold text-slate-700 leading-relaxed tour-text">${d.tourPackages}</p>
+                            </div>
+
+                            <a href="https://wa.me/91${d.phone}?text=Hi ${d.name}, I found you on Bhaskar Taxi. I want to book a trip for ${d.tourPackages}" 
+                               target="_blank" 
+                               class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-black uppercase text-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-95">
+                                <i class="fa-brands fa-whatsapp text-lg"></i> Book via WhatsApp
+                            </a>
+                        </div>
+                        `;
+                    }
+                });
+            } else {
+                container.innerHTML = "<p class='text-center font-bold text-slate-400'>No taxis available right now.</p>";
+            }
+        });
+
+        // Search Functionality
+        window.filterDrivers = () => {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.getElementsByClassName('driver-card');
+            
+            for (let i = 0; i < cards.length; i++) {
+                const text = cards[i].innerText.toLowerCase();
+                cards[i].style.display = text.includes(input) ? "block" : "none";
+            }
+        };
+    </script>
+</body>
+</html>
