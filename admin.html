@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxi Admin - Bhaskar Fleet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 p-4">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-black text-slate-800 uppercase italic">Fleet Manager</h1>
+            <span id="driverCount" class="bg-slate-800 text-white px-4 py-1 rounded-full text-xs font-bold">Loading...</span>
+        </header>
+
+        <div id="driverList" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // USE YOUR NEW TAXI CONFIG HERE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCK974BfqA602L1Ne4ihlIrS3o7_iPknuA",
+            authDomain: "taxi--driver.firebaseapp.com",
+            databaseURL: "https://taxi--driver-default-rtdb.firebaseio.com",
+            projectId: "taxi--driver",
+            storageBucket: "taxi--driver.firebasestorage.app",
+            messagingSenderId: "651150108647",
+            appId: "1:651150108647:web:251dbedfa6669762993f42"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const driversRef = ref(db, 'drivers');
+
+        // Listen for data in Realtime
+        onValue(driversRef, (snapshot) => {
+            const list = document.getElementById('driverList');
+            list.innerHTML = ""; 
+            let count = 0;
+
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    const key = childSnapshot.key;
+                    const data = childSnapshot.val();
+                    count++;
+
+                    const statusColor = data.status === 'Approved' ? 'text-green-600 bg-green-100' : 'text-orange-600 bg-orange-100';
+
+                    list.innerHTML += `
+                        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center">
+                            <img src="${data.photo}" class="w-16 h-16 rounded-2xl object-cover bg-slate-100">
+                            
+                            <div class="flex-1 text-center md:text-left">
+                                <h3 class="font-black text-slate-800 uppercase">${data.name}</h3>
+                                <p class="text-xs font-bold text-slate-500">${data.taxiModel} | ${data.taxiNumber}</p>
+                                <span class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${statusColor}">${data.status}</span>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <a href="https://wa.me/91${data.phone}" target="_blank" class="p-3 bg-green-500 text-white rounded-xl shadow-md"><i class="fa-brands fa-whatsapp"></i></a>
+                                
+                                <button onclick="approveDriver('${key}')" class="px-4 py-2 bg-slate-800 text-white text-xs font-black rounded-xl uppercase">Approve</button>
+                                
+                                <button onclick="deleteDriver('${key}')" class="px-4 py-2 bg-red-50 text-red-500 text-xs font-black rounded-xl uppercase"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = "<p class='text-center font-bold text-slate-400'>No registrations yet.</p>";
+            }
+            document.getElementById('driverCount').innerText = count + " DRIVERS";
+        });
+
+        // Function to Approve
+        window.approveDriver = (key) => {
+            update(ref(db, `drivers/${key}`), { status: "Approved" });
+        };
+
+        // Function to Delete
+        window.deleteDriver = (key) => {
+            if(confirm("Delete this driver registration?")) {
+                remove(ref(db, `drivers/${key}`));
+            }
+        };
+    </script>
+</body>
+</html>
